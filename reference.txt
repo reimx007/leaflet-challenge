@@ -1,0 +1,6 @@
+https://gis.stackexchange.com/questions/220489/change-style-of-geojson-circle-marker-by-feature-properties
+
+
+https://leafletjs.com/examples/choropleth/
+
+https://gis.stackexchange.com/questions/133630/adding-leaflet-legend
