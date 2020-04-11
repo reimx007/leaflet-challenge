@@ -1,4 +1,5 @@
 
+// function to choose color based on magnitude
 function chooseColor(magnitude){
       var fillColor = ""
       if ( magnitude > 8 ) fillColor = "#7f2704";
@@ -10,7 +11,7 @@ function chooseColor(magnitude){
       return fillColor;
     }
 
-function chooseRadius(magnitude){
+// function to choose size based on magnitudefunction chooseRadius(magnitude){
       var radius = 0
       if ( magnitude > 8 ) radius = 12;
       else if ( magnitude > 6 ) radius = 10;
@@ -20,11 +21,12 @@ function chooseRadius(magnitude){
       else radius = 4;  // no data
       return radius;
     }
-// Store API query variables
+
+// Store earthquake api variable
 var url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
 
 
-
+// pull earthquake and tectonic plates jsons into json variables
 d3.json("static/data/PB2002_plates.json", function(response1) {
   d3.json(url, function(response2) {
     var earthquakeData = response2.features;
@@ -35,28 +37,35 @@ d3.json("static/data/PB2002_plates.json", function(response1) {
     });
   });
 
-
+// funtion to create features from earthquakes and plates json variables
 function createFeatures(earthquakeData, platesData) {
+  // funtion to bind popups to the earthquakes
   function oneachfeature(feature, layer) {
     layer.bindPopup("<h3>" + feature.properties.place +
       "</h3><hr><p>" + new Date(feature.properties.time) + "</p><hr><p>Magnitude: " + (feature.properties.mag) + "</p>");
   }
+  // style for tectonic plates
   var mapStyle = {
     color: "orange",
     fillColor: "",
     fillOpacity: 0,
     weight: 2
   };
+  // create plates layer
   var plates = L.geoJson(platesData, {
     // Passing in our style object
     style: mapStyle,
+    // bind popup to plates
     onEachFeature: function( feature, layer ){
       layer.bindPopup( "<h3>Plate name: " + feature.properties.PlateName + "</h3>")
     }
   });
 
+// create earthquake layer
   var earthquakes = L.geoJson(earthquakeData, {
+    // bind popups
     onEachFeature: oneachfeature,
+    // turn geogson into points
     pointToLayer: function(feature,latlng){
 	  return new L.CircleMarker(latlng, {
       radius: chooseRadius(feature.properties.mag),
@@ -67,6 +76,7 @@ function createFeatures(earthquakeData, platesData) {
     }
   })//.addTo(myMap);
 
+// get colors for legend
   function getColor(d) {
     return d > 8 ? '#7f2704' :
            d > 6  ? '#a63603' :
@@ -75,6 +85,8 @@ function createFeatures(earthquakeData, platesData) {
            d > 0   ? '#fdd0a2' :
                       '#FFEDA0';
     }
+
+    // create legend
     var legend = L.control({position: 'bottomright'});
 
     legend.onAdd = function (map) {
@@ -96,13 +108,14 @@ function createFeatures(earthquakeData, platesData) {
   earthquakes.bringToFront();
   plates.bringToBack();
 
-
+// call create map function
   createMap(plates, earthquakes, legend);
 }
 
+// function to create the map
 function createMap(plates, earthquakes, legend){
 
-    // Define streetmap and darkmap layers
+    // Define satellite and grayscale and outdoors layers
     var satellite = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
       attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
       maxZoom: 18,
@@ -144,7 +157,7 @@ function createMap(plates, earthquakes, legend){
       center: [
         37.09, -95.71
       ],
-      zoom: 5,
+      zoom: 4,
       layers: [satellite, earthquakes]
     });
 
@@ -156,6 +169,7 @@ function createMap(plates, earthquakes, legend){
       autoZIndex: true
     }).addTo(myMap);
 
+// add legend to map
     legend.addTo(myMap);
 
 }
